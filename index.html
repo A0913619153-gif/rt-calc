@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RT 曝光時間計算器</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c0f; --panel:#111418; --panel2:#181d24;
+  --border:#1f2733; --border2:#2a3545;
+  --amber:#f5a623; --amber-dim:rgba(245,166,35,0.15);
+  --green:#39e08a; --green-dim:rgba(57,224,138,0.12);
+  --red:#ff4f4f; --red-dim:rgba(255,79,79,0.1);
+  --blue:#4fc3f7; --blue-dim:rgba(79,195,247,0.1);
+  --purple:#b39ddb;
+  --text:#cdd6e0; --text-dim:#5a6a7a; --text-bright:#e8f0f8;
+  --mono:'Share Tech Mono',monospace; --sans:'Noto Sans TC',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:32px 16px 80px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);pointer-events:none;z-index:0;opacity:0.4}
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1}
+header{margin-bottom:36px;animation:fadeD .5s ease both}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:4px 12px;margin-bottom:14px}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:blink 1.4s infinite}
+.badge span{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:3px}
+h1{font-family:var(--mono);font-size:clamp(20px,4vw,36px);color:var(--text-bright);letter-spacing:2px;line-height:1.2}
+h1 small{display:block;font-size:clamp(11px,2vw,14px);color:var(--text-dim);letter-spacing:4px;margin-top:6px;font-weight:normal}
+.formula-banner{margin-top:18px;background:var(--panel);border:1px solid var(--border2);border-left:3px solid var(--amber);border-radius:6px;padding:14px 18px;font-family:var(--mono);font-size:14px;color:var(--text-dim);line-height:2}
+.formula-banner .eq{color:var(--text-bright);font-size:16px}
+.formula-banner .var{color:var(--amber)}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.layout{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;animation:fadeU .5s ease both;position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--amber-dim),transparent)}
+.card.full{grid-column:1/-1}
+.card-hd{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.card-hd .hd-line{flex:1;height:1px;background:var(--border)}
+.card-hd-btn{font-family:var(--mono);font-size:10px;letter-spacing:2px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);color:var(--amber);border-radius:4px;padding:4px 10px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.card-hd-btn:hover{background:var(--amber);color:#000}
+label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono);letter-spacing:1px}
+.field{margin-bottom:14px}
+input[type=number],input[type=text],input[type=date],select{width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:9px 13px;color:var(--text-bright);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;appearance:textfield}
+input[type=date]{color-scheme:dark}
+input[type=number]::-webkit-inner-spin-button{display:none}
+input:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.1)}
+select option{background:var(--panel2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wall-tog{display:flex;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.wall-tog button{flex:1;padding:10px 6px;background:var(--panel2);border:none;font-family:var(--mono);font-size:11px;color:var(--text-dim);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.4}
+.wall-tog button.active{background:var(--blue-dim);color:var(--blue);border-bottom:2px solid var(--blue)}
+.wall-tog .wi{font-size:17px}.wall-tog .wl{font-size:10px}.wall-tog .ws{font-size:9px;color:var(--text-dim)}
+.wall-info{background:var(--blue-dim);border:1px solid rgba(79,195,247,.18);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:4px}
+.wall-info b{color:var(--blue);display:block;margin-bottom:4px}
+#sourceList{display:flex;flex-direction:column;gap:12px}
+.src-card{background:var(--panel2);border:1px solid var(--border2);border-radius:10px;padding:16px;transition:border-color .2s}
+.src-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.src-num{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;white-space:nowrap}
+.src-name{font-family:var(--mono);font-size:14px;color:var(--text-bright);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(179,157,219,.15);color:var(--purple);border:1px solid rgba(179,157,219,.2);white-space:nowrap}
+.src-actions{display:flex;gap:6px;margin-left:auto}
+.sbtn{background:none;border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;transition:all .2s;letter-spacing:1px;white-space:nowrap}
+.sbtn:hover{border-color:var(--amber);color:var(--amber)}
+.sbtn.del:hover{border-color:var(--red);color:var(--red)}
+.src-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sf{background:var(--panel);border-radius:6px;padding:8px 12px}
+.sf-lbl{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-bottom:4px}
+.sf-v{font-family:var(--mono);font-size:13px;color:var(--text-bright)}
+.sf-v.today{color:var(--amber)}
+.sf-v.ok{color:var(--green)}.sf-v.warn{color:var(--amber)}.sf-v.low{color:var(--red)}
+.dbar-wrap{background:var(--border);border-radius:3px;height:4px;margin-top:6px;overflow:hidden}
+.dbar{height:100%;border-radius:3px;transition:width .5s ease}
+.dbar.ok{background:var(--green)}.dbar.warn{background:var(--amber)}.dbar.low{background:var(--red)}
+.src-edit{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.src-edit.open{display:block}
+.sel-factor{background:var(--green-dim);border:1px solid rgba(57,224,138,.25);border-radius:8px;padding:12px 16px;margin-top:8px;display:none;align-items:center;gap:12px}
+.sel-factor.show{display:flex}
+.slf-lbl{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px}
+.slf-v{font-family:var(--mono);font-size:22px;color:var(--green);font-weight:700}
+.slf-desc{font-size:12px;color:var(--text-dim);margin-left:auto}
+.tbl-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+th{background:rgba(245,166,35,.08);color:var(--amber);padding:8px 12px;text-align:left;letter-spacing:1px;border-bottom:1px solid var(--border2);white-space:nowrap}
+td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+tr.selected td{background:var(--amber-dim);color:var(--amber)}
+tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
+.fv{color:var(--green);font-weight:700}
+.btn-calc{width:100%;padding:16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f5a623,#e8880a);color:#000;font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:opacity .2s,transform .1s;box-shadow:0 4px 20px rgba(245,166,35,.25)}
+.btn-calc:hover{opacity:.9}.btn-calc:active{transform:scale(.99)}
+.bsm{padding:7px 14px;border:none;border-radius:6px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.bsm.ghost{background:var(--panel2);border:1px solid var(--border2);color:var(--text-dim)}
+.bsm.ghost:hover{color:var(--text)}
+.error-msg{background:var(--red-dim);border:1px solid rgba(255,79,79,.3);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--red);margin-top:12px;display:none}
+#resultCard{display:none}
+.res-src-info{font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-bottom:16px;padding:10px 14px;background:var(--amber-dim);border-radius:6px;border-left:3px solid var(--amber);line-height:1.8}
+.res-src-info b{color:var(--amber)}
+.res-main{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.res-num{font-family:var(--mono);font-size:clamp(40px,8vw,64px);color:var(--amber);line-height:1;text-shadow:0 0 40px rgba(245,166,35,.4)}
+.res-unit{font-family:var(--mono);font-size:18px;color:var(--text-dim);padding-bottom:8px}
+.res-alt{font-family:var(--mono);font-size:13px;color:var(--text-dim);margin-bottom:4px}
+.res-alt span{color:var(--blue)}
+.breakdown{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.bk{background:var(--panel2);border-radius:8px;padding:10px 14px}
+.bk-lbl{font-size:10px;color:var(--text-dim);font-family:var(--mono);letter-spacing:2px;margin-bottom:4px}
+.bk-v{font-family:var(--mono);font-size:14px;color:var(--text-bright)}
+#dblExtra{display:none}
+#dblExtra.show{display:block}
+@keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeU{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="badge"><span class="badge-dot"></span><span>NDT SYSTEM ONLINE</span></div>
+  <h1>RT 曝光時間計算器<small>RADIOGRAPHIC TESTING · EXPOSURE TIME CALCULATOR</small></h1>
+  <div class="formula-banner">
+    <span class="var">曝光時間</span> = <span class="eq">( D² × F ) ÷ A(t)</span><br>
+    <span style="font-size:12px">
+      <span class="var">D</span> = 射源距離(inch) &nbsp;|&nbsp;
+      <span class="var">F</span> = 厚度係數 &nbsp;|&nbsp;
+      <span class="var">A(t)</span> = A₀ × 2^(−t / T½)（今日衰減後強度）
+    </span>
+  </div>
+</header>
+
+<div class="layout">
+
+<div class="card full" style="animation-delay:.0s">
+  <div class="card-hd">射源管理<span class="hd-line"></span><button class="card-hd-btn" onclick="addSource()">＋ 新增射源</button></div>
+  <div id="sourceList"></div>
+</div>
+
+<div class="card full" style="animation-delay:.08s">
+  <div class="card-hd">拍攝方式<span class="hd-line"></span></div>
+  <div class="wall-tog">
+    <button id="btnSW" class="active" onclick="setWall('single')"><span class="wi">◎</span><span class="wl">單壁單影</span><span class="ws">SWSI</span></button>
+    <button id="btnDWSI" onclick="setWall('double-si')"><span class="wi">◉</span><span class="wl">雙壁單影</span><span class="ws">DWSI</span></button>
+    <button id="btnDWDI" onclick="setWall('double-di')"><span class="wi">⦿</span><span class="wl">雙壁雙影</span><span class="ws">DWDI</span></button>
+  </div>
+  <div class="wall-info" id="wallInfo"><b>單壁單影（SWSI）</b>射源在管外，底片貼管外壁，穿透單層管壁成像。有效厚度 = T。適用大管徑或平板。</div>
+  <div id="dblExtra">
+    <div class="field" style="margin-top:12px;margin-bottom:0">
+      <label>對面管壁厚度 T₂（mm）</label>
+      <input type="number" id="thickness2" placeholder="輸入對面壁厚 mm" min="0.5" step="0.5">
+    </div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:.12s">
+  <div class="card-hd">計算用射源<span class="hd-line"></span></div>
+  <div class="field">
+    <label>選擇射源</label>
+    <select id="calcSel" onchange="onCalcSelChange()"><option value="">— 請先新增射源 —</option></select>
+  </div>
+  <div id="calcPreview" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="sf"><div class="sf-lbl">今日強度</div><div class="sf-v today" id="pvStr">—</div></div>
+      <div class="sf"><div class="sf-lbl">衰減天數</div><div class="sf-v" id="pvDays">—</div></div>
+      <div class="sf"><div class="sf-lbl">剩餘比例</div><div class="sf-v" id="pvPct">—</div></div>
+      <div class="sf"><div class="sf-lbl">校正強度</div><div class="sf-v" id="pvOrig">—</div></div>
+    </div>
+  </div>
+  <div class="field">
+    <label>射源至底片距離 D（inch）</label>
+    <input type="number" id="distance" placeholder="例如：700" min="1" step="1">
+  </div>
+</div>
+
+<div class="card" style="animation-delay:.16s">
+  <div class="card-hd">工件參數<span class="hd-line"></span></div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--panel2);border-radius:6px;padding:8px 12px;margin-bottom:14px">
+    係數表依實際放射線檢測曝光係數表，適用 Ir-192 鋼材，厚度 1~89 mm
+  </div>
+  <div class="field">
+    <label id="thickLbl">工件厚度（mm）—— 從下表選擇或直接輸入</label>
+    <input type="number" id="thickness" placeholder="輸入厚度 mm" min="1" step="0.5" oninput="onThickInput()">
+  </div>
+  <div class="sel-factor" id="selFactor">
+    <div><div class="slf-lbl">厚度係數 F</div><div class="slf-v" id="sfVal">—</div></div>
+    <div class="slf-desc" id="sfDesc"></div>
+  </div>
+</div>
+
+<div class="card full" style="animation-delay:.2s">
+  <div class="card-hd">厚度係數對照表<span class="hd-line"></span></div>
+  <div class="tbl-wrap">
+    <table><thead><tr>
+      <th>厚度(mm)</th><th>曝光係數 F</th>
+      <th>厚度(mm)</th><th>曝光係數 F</th>
+      <th>厚度(mm)</th><th>曝光係數 F</th>
+    </tr></thead><tbody id="factorTbody"></tbody></table>
+  </div>
+  <div style="margin-top:8px;font-size:11px;color:var(--text-dim);font-family:var(--mono)">▸ 點擊任一列自動帶入厚度與係數 &nbsp;|&nbsp; 資料來源：放射線檢測曝光係數表（1~89mm）</div>
+</div>
+
+<div class="card full" style="animation-delay:.24s">
+  <div class="card-hd">計算結果<span class="hd-line"></span></div>
+  <button class="btn-calc" onclick="calculate()">▶ &nbsp;計算曝光時間</button>
+  <div class="error-msg" id="errMsg"></div>
+  <div id="resultCard" style="margin-top:24px">
+    <div class="res-src-info" id="resSrcInfo"></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px">曝光時間</div>
+    <div class="res-main">
+      <div class="res-num" id="resNum">—</div>
+      <div class="res-unit" id="resUnit">秒</div>
+    </div>
+    <div class="res-alt" id="resAlt"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+const HL = {Ir192:73.83,Se75:119.78,Co60:1925.5,Yb169:32.01,custom:null};
+const IL = {Ir192:'Ir-192',Se75:'Se-75',Co60:'Co-60',Yb169:'Yb-169',custom:'自訂'};
+const MK = {steel:'steel',stainless:'ss',aluminum:'al',copper:'cu'};
+const ML = {steel:'碳鋼',stainless:'不鏽鋼',aluminum:'鋁合金',copper:'銅合金'};
+// 係數表：依實際放射線檢測曝光係數表（厚度 1~90mm）
+const FT_RAW = {
+  1:0.088, 2:0.090, 3:0.092, 4:0.095, 5:0.095,
+  6:0.100, 7:0.112, 8:0.117, 9:0.122, 10:0.133,
+  11:0.144,12:0.155,13:0.161,14:0.167,15:0.173,
+  16:0.180,17:0.191,18:0.200,19:0.213,20:0.227,
+  21:0.242,22:0.257,23:0.270,24:0.280,25:0.295,
+  26:0.315,27:0.325,28:0.358,29:0.375,30:0.392,
+  31:0.410,32:0.432,33:0.454,34:0.476,35:0.500,
+  36:0.526,37:0.552,38:0.580,39:0.620,40:0.660,
+  41:0.700,42:0.750,43:0.800,44:0.850,45:0.900,
+  46:0.946,47:0.990,48:1.070,49:1.140,50:1.225,
+  51:0.125,52:1.330,53:1.420,54:1.500,55:1.590,
+  56:1.650,57:1.740,58:1.820,59:1.900,60:1.980,
+  61:2.070,62:2.170,63:2.270,64:2.370,65:2.510,
+  66:2.650,67:2.800,68:2.990,69:3.180,70:3.370,
+  71:3.560,72:3.750,73:3.950,74:4.250,75:4.500,
+  76:4.750,77:5.000,78:5.250,79:5.650,80:5.900,
+  81:6.400,82:6.800,83:7.000,84:7.200,85:7.700,
+  86:8.300,87:9.000,88:10.800,89:11.700,90:null
+};
+
+// 查詢最接近厚度的係數
+function getFactor(mm){
+  const t = Math.round(mm);
+  if(FT_RAW[t] !== undefined && FT_RAW[t] !== null) return FT_RAW[t];
+  // 往上找
+  for(let i=t+1;i<=90;i++){ if(FT_RAW[i]) return FT_RAW[i]; }
+  // 往下找
+  for(let i=t-1;i>=1;i--){ if(FT_RAW[i]) return FT_RAW[i]; }
+  return null;
+}
+
+// 保留 FT 供表格顯示用（每5mm一筆代表）
+const FT = Object.entries(FT_RAW).filter(([k,v])=>v!==null).map(([k,v])=>({rep:+k,f:v}));
+const WD = {
+  'single':   {title:'單壁單影（SWSI）',desc:'射源在管外，底片貼管外壁，穿透單層管壁成像。有效厚度 = T。'},
+  'double-si':{title:'雙壁單影（DWSI）',desc:'射線穿透兩層管壁，只判讀靠底片側。有效厚度 = T₁ + T₂。'},
+  'double-di':{title:'雙壁雙影（DWDI）',desc:'射源偏置，兩焊道同時投影底片。有效厚度 = 2 × T₁。'},
+};
+const SKEY = 'rt_v2_sources';
+
+let sources=[], cnt=0, wall='single', rowIdx=null;
+
+function g(id){return document.getElementById(id);}
+function today(){return new Date().toISOString().slice(0,10);}
+
+function calcDecay(s){
+  if(!s.halfLifeDays||!s.calDate||!s.calStrength) return null;
+  const days=(new Date(today())-new Date(s.calDate))/86400000;
+  const base=s.calUnit==='Ci'?+s.calStrength:s.calStrength/37;
+  const ci=base*Math.pow(2,-days/s.halfLifeDays);
+  return{ci,gbq:ci*37,days:Math.round(days),pct:ci/base*100};
+}
+
+function pc(p){return p>50?'ok':p>20?'warn':'low';}
+
+function sHtml(s){
+  const d=calcDecay(s);
+  if(!d) return '<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:6px 0">填寫校正日期與強度後自動計算衰減</div>';
+  const c=pc(d.pct);
+  return `<div class="sf"><div class="sf-lbl">今日強度(Ci)</div><div class="sf-v today">${d.ci.toFixed(4)}</div></div>
+    <div class="sf"><div class="sf-lbl">今日強度(GBq)</div><div class="sf-v today">${d.gbq.toFixed(2)}</div></div>
+    <div class="sf"><div class="sf-lbl">已衰減天數</div><div class="sf-v">${d.days} 天</div></div>
+    <div class="sf"><div class="sf-lbl">剩餘比例</div><div class="sf-v ${c}">${d.pct.toFixed(1)}%</div>
+    <div class="dbar-wrap"><div class="dbar ${c}" style="width:${Math.min(100,d.pct).toFixed(1)}%"></div></div></div>`;
+}
+
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(sources));}catch(e){}}
+
+function load(){
+  try{
+    const r=localStorage.getItem(SKEY);
+    if(r){const a=JSON.parse(r);if(Array.isArray(a)&&a.length){a.forEach(s=>addSrc(s));return true;}}
+  }catch(e){}
+  return false;
+}
+
+function addSrc(p){
+  cnt++;
+  const id='s'+cnt;
+  const s=Object.assign({id,name:'射源 #'+cnt,isotope:'Ir192',calDate:today(),calStrength:'',calUnit:'Ci',halfLifeDays:HL.Ir192},p||{},{id});
+  sources.push(s);
+  renderList();
+  refreshSel();
+  save();
+}
+
+function delSrc(id){
+  sources=sources.filter(s=>s.id!==id);
+  renderList();refreshSel();save();
+}
+
+function tog(id){g('edit_'+id).classList.toggle('open');}
+
+function setF(id,field,val){
+  const s=sources.find(x=>x.id===id);if(!s)return;
+  if(field==='calStrength') s.calStrength=val===''?'':parseFloat(val);
+  else s[field]=val;
+  if(field==='isotope'){
+    s.halfLifeDays=val==='custom'?(parseFloat(g('hli_'+id)?.value)||null):HL[val];
+    const w=g('hlw_'+id);if(w)w.style.display=val==='custom'?'block':'none';
+  }
+  if(field==='halfLifeDays') s.halfLifeDays=parseFloat(val)||null;
+  const se=g('st_'+id);if(se)se.innerHTML=sHtml(s);
+  const be=g('bg_'+id);if(be)be.textContent=IL[s.isotope]||'自訂';
+  const ne=g('nd_'+id);if(ne)ne.textContent=s.name;
+  refreshSel();save();
+}
+
+function renderList(){
+  const el=g('sourceList');
+  if(!sources.length){el.innerHTML='<div style="font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:center;padding:24px">尚無射源，點擊「＋ 新增射源」開始建立</div>';return;}
+  el.innerHTML=sources.map((s,i)=>`
+  <div class="src-card" id="c_${s.id}">
+    <div class="src-top">
+      <span class="src-num">台 ${i+1}</span>
+      <span class="src-name" id="nd_${s.id}">${s.name}</span>
+      <span class="src-badge" id="bg_${s.id}">${IL[s.isotope]||'自訂'}</span>
+      <div class="src-actions">
+        <button class="sbtn" onclick="tog('${s.id}')">編輯</button>
+        <button class="sbtn del" onclick="delSrc('${s.id}')">刪除</button>
+      </div>
+    </div>
+    <div class="src-stats" id="st_${s.id}">${sHtml(s)}</div>
+    <div class="src-edit" id="edit_${s.id}">
+      <div class="row2">
+        <div class="field"><label>射源名稱</label><input type="text" value="${s.name}" oninput="setF('${s.id}','name',this.value)"></div>
+        <div class="field"><label>同位素種類</label>
+          <select onchange="setF('${s.id}','isotope',this.value)">
+            <option value="Ir192" ${s.isotope==='Ir192'?'selected':''}>Ir-192（T½=73.83天）</option>
+            <option value="Se75"  ${s.isotope==='Se75'?'selected':''}>Se-75（T½=119.78天）</option>
+            <option value="Co60"  ${s.isotope==='Co60'?'selected':''}>Co-60（T½=1925.5天）</option>
+            <option value="Yb169" ${s.isotope==='Yb169'?'selected':''}>Yb-169（T½=32.01天）</option>
+            <option value="custom" ${s.isotope==='custom'?'selected':''}>自訂同位素</option>
+          </select>
+        </div>
+      </div>
+      <div id="hlw_${s.id}" style="display:${s.isotope==='custom'?'block':'none'}" class="field">
+        <label>自訂半衰期（天）</label>
+        <input type="number" id="hli_${s.id}" value="${s.halfLifeDays||''}" placeholder="輸入天數" min="0.1" step="0.1" oninput="setF('${s.id}','halfLifeDays',this.value)">
+      </div>
+      <div class="field"><label>校正日期</label><input type="date" value="${s.calDate||''}" onchange="setF('${s.id}','calDate',this.value)"></div>
+      <div class="row2">
+        <div class="field"><label>校正時強度</label><input type="number" value="${s.calStrength||''}" placeholder="數值" min="0.001" step="0.01" oninput="setF('${s.id}','calStrength',this.value)"></div>
+        <div class="field"><label>強度單位</label>
+          <select onchange="setF('${s.id}','calUnit',this.value)">
+            <option value="Ci"  ${s.calUnit==='Ci'?'selected':''}>Ci（居里）</option>
+            <option value="GBq" ${s.calUnit==='GBq'?'selected':''}>GBq</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:4px">
+        <button class="bsm ghost" onclick="tog('${s.id}')">收起</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function refreshSel(){
+  const sel=g('calcSel'),prev=sel.value;
+  sel.innerHTML='<option value="">— 請選擇射源 —</option>'+sources.map(s=>`<option value="${s.id}">${s.name}（${IL[s.isotope]}）</option>`).join('');
+  if(sources.find(s=>s.id===prev))sel.value=prev;
+  onCalcSelChange();
+}
+
+function onCalcSelChange(){
+  const id=g('calcSel').value,pv=g('calcPreview');
+  if(!id){pv.style.display='none';return;}
+  const s=sources.find(x=>x.id===id);
+  if(!s){pv.style.display='none';return;}
+  pv.style.display='block';
+  const d=calcDecay(s);
+  if(d){
+    g('pvStr').textContent=d.ci.toFixed(4)+' Ci / '+d.gbq.toFixed(2)+' GBq';
+    g('pvDays').textContent=d.days+' 天';
+    g('pvPct').textContent=d.pct.toFixed(1)+'%';
+    g('pvPct').className='sf-v '+pc(d.pct);
+    g('pvOrig').textContent=s.calStrength+' '+s.calUnit+' ('+s.calDate+')';
+  }else{
+    g('pvStr').textContent='—';g('pvDays').textContent='—';
+    g('pvPct').textContent='—';g('pvPct').className='sf-v';
+    g('pvOrig').textContent='請填寫射源資料';
+  }
+}
+
+function setWall(w){
+  wall=w;
+  ['btnSW','btnDWSI','btnDWDI'].forEach(id=>g(id).classList.remove('active'));
+  g({single:'btnSW','double-si':'btnDWSI','double-di':'btnDWDI'}[w]).classList.add('active');
+  const info=WD[w];
+  g('wallInfo').innerHTML=`<b>${info.title}</b>${info.desc}`;
+  g('dblExtra').classList.toggle('show',w==='double-si');
+  g('thickLbl').textContent=w==='single'?'工件厚度（mm）—— 從下表選擇或直接輸入':w==='double-si'?'近射源側管壁厚度 T₁（mm）':'管壁厚度 T₁（mm）—— 雙壁雙影用 2×T₁';
+}
+
+function renderTable(){
+  // Display in 3-column layout: rows of (mm1,f1 | mm2,f2 | mm3,f3)
+  const entries = FT;
+  const perCol = Math.ceil(entries.length/3);
+  const col1 = entries.slice(0, perCol);
+  const col2 = entries.slice(perCol, perCol*2);
+  const col3 = entries.slice(perCol*2);
+  const maxRows = Math.max(col1.length, col2.length, col3.length);
+  let rows = '';
+  for(let i=0;i<maxRows;i++){
+    const a=col1[i], b=col2[i], c=col3[i];
+    rows += `<tr>
+      ${a?`<td onclick="pickMm(${a.rep})" style="cursor:pointer">${a.rep}</td><td class="fv" onclick="pickMm(${a.rep})" style="cursor:pointer">${a.f}</td>`:'<td></td><td></td>'}
+      ${b?`<td onclick="pickMm(${b.rep})" style="cursor:pointer">${b.rep}</td><td class="fv" onclick="pickMm(${b.rep})" style="cursor:pointer">${b.f}</td>`:'<td></td><td></td>'}
+      ${c?`<td onclick="pickMm(${c.rep})" style="cursor:pointer">${c.rep}</td><td class="fv" onclick="pickMm(${c.rep})" style="cursor:pointer">${c.f}</td>`:'<td></td><td></td>'}
+    </tr>`;
+  }
+  g('factorTbody').innerHTML = rows;
+}
+
+function hiRow(mm){
+  document.querySelectorAll('#factorTbody td').forEach(td=>{
+    td.style.background='';td.style.color='';
+  });
+  rowIdx=mm;
+  // highlight matching cells
+  document.querySelectorAll('#factorTbody td').forEach(td=>{
+    if(td.textContent==String(mm)&&!td.classList.contains('fv')){
+      td.style.background='rgba(245,166,35,0.2)';td.style.color='var(--amber)';
+      const next=td.nextElementSibling;
+      if(next){next.style.background='rgba(245,166,35,0.2)';next.style.color='var(--amber)';}
+    }
+  });
+}
+
+function pickMm(mm){
+  rowIdx=mm;
+  g('thickness').value=mm;
+  const f=getFactor(mm);
+  if(f!==null) showF(f, `厚度 ${mm} mm`);
+  hiRow(mm);
+}
+
+function showF(f,desc){
+  g('sfVal').textContent=f;g('sfDesc').textContent=desc;
+  g('selFactor').classList.add('show');
+}
+
+function onThickInput(){
+  const t=parseFloat(g('thickness').value);if(isNaN(t)||t<=0)return;
+  const f=getFactor(t);
+  if(f!==null){rowIdx=Math.round(t);showF(f,`厚度 ${Math.round(t)} mm`);hiRow(Math.round(t));}
+}
+
+function findRow(tEff){
+  return {f: getFactor(tEff), rep: Math.round(tEff)};
+}
+
+function getThick(){
+  const t1=parseFloat(g('thickness').value);
+  if(isNaN(t1)||t1<=0)return null;
+  if(wall==='single')return{tEff:t1,label:`T = ${t1} mm（單壁）`};
+  if(wall==='double-di')return{tEff:t1*2,label:`2×T₁ = ${t1*2} mm（雙壁雙影）`};
+  // double-si：T₁+T₂ 合計後查係數表
+  const t2=parseFloat(g('thickness2').value);
+  if(isNaN(t2)||t2<=0)return null;
+  const total=t1+t2;
+  return{tEff:total,label:`T₁(${t1})+T₂(${t2}) = ${total} mm（雙壁單影）`};
+}
+
+function calculate(){
+  g('errMsg').style.display='none';g('resultCard').style.display='none';
+  const sid=g('calcSel').value;
+  if(!sid){err('請選擇計算用射源');return;}
+  const src=sources.find(s=>s.id===sid);
+  if(!src){err('找不到射源');return;}
+  const d=calcDecay(src);
+  if(!d||d.ci<=0){err('射源資料不完整，請填寫校正日期與強度');return;}
+  const D=parseFloat(g('distance').value);
+  if(isNaN(D)||D<=0){err('請輸入有效的射源距離');return;}
+  const tr=getThick();
+  if(!tr){err(wall==='double-si'?'請輸入 T₁ 及 T₂':'請輸入工件厚度');return;}
+  const F=getFactor(tr.tEff);
+  if(F===null){err(`厚度 ${tr.tEff}mm 超出係數表範圍（1~89mm）`);return;}
+  const T=(D*D*F)/d.ci*60,Tm=T/60;
+  let dn,du,da;
+  if(T<60){dn=T.toFixed(1);du='秒';da=`約 <span>${Tm.toFixed(2)}</span> 分鐘`;}
+  else{dn=Tm.toFixed(2);du='分鐘';da=`即 <span>${T.toFixed(0)}</span> 秒`;}
+  const wl={single:'單壁單影','double-si':'雙壁單影','double-di':'雙壁雙影'}[wall];
+  g('resSrcInfo').innerHTML=`<b>${src.name}（${IL[src.isotope]}）</b><br>今日強度：${d.ci.toFixed(4)} Ci（${d.gbq.toFixed(2)} GBq） · 已過 ${d.days} 天 · 剩餘 ${d.pct.toFixed(1)}%`;
+  g('resNum').textContent=dn;g('resUnit').textContent=du;g('resAlt').innerHTML=da;
+  g('breakdown').innerHTML=`
+    <div class="bk"><div class="bk-lbl">拍攝方式</div><div class="bk-v" style="color:var(--blue)">${wl}</div></div>
+    <div class="bk"><div class="bk-lbl">距離 D</div><div class="bk-v">${D} inch</div></div>
+    <div class="bk"><div class="bk-lbl">D²</div><div class="bk-v">${(D*D).toFixed(0)}</div></div>
+    <div class="bk"><div class="bk-lbl">有效厚度</div><div class="bk-v" style="font-size:11px">${tr.label}</div></div>
+    <div class="bk"><div class="bk-lbl">係數 F</div><div class="bk-v">${F}</div></div>
+    <div class="bk"><div class="bk-lbl">A(今日)Ci</div><div class="bk-v">${d.ci.toFixed(4)}</div></div>
+    <div class="bk"><div class="bk-lbl">A₀校正值</div><div class="bk-v">${src.calStrength} ${src.calUnit}<br><span style="font-size:10px;color:var(--text-dim)">${src.calDate}</span></div></div>
+    <div class="bk"><div class="bk-lbl">T½</div><div class="bk-v">${src.halfLifeDays} 天</div></div>`;
+  const rc=g('resultCard');rc.style.display='block';rc.style.animation='none';void rc.offsetWidth;rc.style.animation='fadeU .4s ease both';
+}
+
+function err(msg){g('errMsg').textContent='⚠ '+msg;g('errMsg').style.display='block';}
+
+// INIT
+const ok=load();
+if(!ok){
+  addSrc({name:'Ir-192 射源 A',isotope:'Ir192',calDate:'2025-01-15',calStrength:10,calUnit:'Ci',halfLifeDays:73.83});
+  addSrc({name:'Se-75 射源 B',isotope:'Se75',calDate:'2024-12-01',calStrength:8,calUnit:'Ci',halfLifeDays:119.78});
+}
+renderTable();
+</script>
+</body>
+</html>
