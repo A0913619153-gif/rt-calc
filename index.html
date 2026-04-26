@@ -32,7 +32,7 @@ h1 small{display:block;font-size:clamp(11px,2vw,14px);color:var(--text-dim);lett
 .formula-banner .var{color:var(--amber)}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:640px){.layout{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;animation:fadeU .5s ease both;position:relative;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;animation:fadeU .5s ease both;position:relative}
 .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--amber-dim),transparent)}
 .card.full{grid-column:1/-1}
 .card-hd{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px}
@@ -129,8 +129,9 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 <div class="layout">
 
 <div class="card full" style="animation-delay:.0s">
-  <div class="card-hd">射源管理<span class="hd-line"></span><button class="card-hd-btn" onclick="addSource()">＋ 新增射源</button></div>
+  <div class="card-hd">射源管理<span class="hd-line"></span></div>
   <div id="sourceList"></div>
+  <button class="card-hd-btn" onclick="addSource()" style="margin-top:14px;width:100%;padding:10px;font-size:13px;border-radius:8px">＋ 新增射源</button>
 </div>
 
 <div class="card full" style="animation-delay:.08s">
@@ -298,6 +299,7 @@ function load(){
   return false;
 }
 
+function addSource(p){ addSrc(p); }
 function addSrc(p){
   cnt++;
   const id='s'+cnt;
