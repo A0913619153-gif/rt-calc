@@ -18,55 +18,55 @@
   --text:#cdd6e0; --text-dim:#5a6a7a; --text-bright:#e8f0f8;
   --mono:'Share Tech Mono',monospace; --sans:'Noto Sans TC',sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:32px 16px 80px;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:24px 12px 80px;overflow-x:hidden;max-width:100vw}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);pointer-events:none;z-index:0;opacity:0.4}
-.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1}
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1;width:100%}
 header{margin-bottom:36px;animation:fadeD .5s ease both}
 .badge{display:inline-flex;align-items:center;gap:8px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:4px 12px;margin-bottom:14px}
 .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:blink 1.4s infinite}
 .badge span{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:3px}
 h1{font-family:var(--mono);font-size:clamp(20px,4vw,36px);color:var(--text-bright);letter-spacing:2px;line-height:1.2}
 h1 small{display:block;font-size:clamp(11px,2vw,14px);color:var(--text-dim);letter-spacing:4px;margin-top:6px;font-weight:normal}
-.formula-banner{margin-top:18px;background:var(--panel);border:1px solid var(--border2);border-left:3px solid var(--amber);border-radius:6px;padding:14px 18px;font-family:var(--mono);font-size:14px;color:var(--text-dim);line-height:2}
+.formula-banner{margin-top:18px;background:var(--panel);border:1px solid var(--border2);border-left:3px solid var(--amber);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:13px;color:var(--text-dim);line-height:2;word-break:break-all}
 .formula-banner .eq{color:var(--text-bright);font-size:16px}
 .formula-banner .var{color:var(--amber)}
-.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.layout{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;animation:fadeU .5s ease both;position:relative}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;animation:fadeU .5s ease both;position:relative}
 .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--amber-dim),transparent)}
 .card.full{grid-column:1/-1}
-.card-hd{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.card-hd{font-family:var(--mono);font-size:13px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px}
 .card-hd .hd-line{flex:1;height:1px;background:var(--border)}
 .card-hd-btn{font-family:var(--mono);font-size:10px;letter-spacing:2px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);color:var(--amber);border-radius:4px;padding:4px 10px;cursor:pointer;transition:all .2s;flex-shrink:0}
 .card-hd-btn:hover{background:var(--amber);color:#000}
-label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono);letter-spacing:1px}
+label{display:block;font-size:15px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono);letter-spacing:1px}
 .field{margin-bottom:14px}
-input[type=number],input[type=text],input[type=date],select{width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:9px 13px;color:var(--text-bright);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;appearance:textfield}
+input[type=number],input[type=text],input[type=date],select{width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:11px 14px;color:var(--text-bright);font-family:var(--mono);font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;appearance:textfield}
 input[type=date]{color-scheme:dark}
 input[type=number]::-webkit-inner-spin-button{display:none}
 input:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.1)}
 select option{background:var(--panel2)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:400px){.row2{grid-template-columns:1fr}}
 .wall-tog{display:flex;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px}
-.wall-tog button{flex:1;padding:10px 6px;background:var(--panel2);border:none;font-family:var(--mono);font-size:11px;color:var(--text-dim);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.4}
+.wall-tog button{flex:1;padding:14px 6px;background:var(--panel2);border:none;font-family:var(--mono);font-size:14px;color:var(--text-dim);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.4}
 .wall-tog button.active{background:var(--blue-dim);color:var(--blue);border-bottom:2px solid var(--blue)}
-.wall-tog .wi{font-size:17px}.wall-tog .wl{font-size:10px}.wall-tog .ws{font-size:9px;color:var(--text-dim)}
+.wall-tog .wi{font-size:22px}.wall-tog .wl{font-size:13px}.wall-tog .ws{font-size:11px;color:var(--text-dim)}
 .wall-info{background:var(--blue-dim);border:1px solid rgba(79,195,247,.18);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:4px}
 .wall-info b{color:var(--blue);display:block;margin-bottom:4px}
 #sourceList{display:flex;flex-direction:column;gap:12px}
 .src-card{background:var(--panel2);border:1px solid var(--border2);border-radius:10px;padding:16px;transition:border-color .2s}
-.src-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.src-num{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;white-space:nowrap}
-.src-name{font-family:var(--mono);font-size:14px;color:var(--text-bright);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.src-badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(179,157,219,.15);color:var(--purple);border:1px solid rgba(179,157,219,.2);white-space:nowrap}
+.src-top{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.src-num{font-family:var(--mono);font-size:14px;color:var(--text-dim);letter-spacing:2px;white-space:nowrap}
+.src-name{font-family:var(--mono);font-size:17px;color:var(--text-bright);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-badge{font-family:var(--mono);font-size:13px;padding:3px 10px;border-radius:3px;background:rgba(179,157,219,.15);color:var(--purple);border:1px solid rgba(179,157,219,.2);white-space:nowrap}
 .src-actions{display:flex;gap:6px;margin-left:auto}
-.sbtn{background:none;border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;transition:all .2s;letter-spacing:1px;white-space:nowrap}
+.sbtn{background:none;border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:13px;color:var(--text-dim);cursor:pointer;transition:all .2s;letter-spacing:1px;white-space:nowrap}
 .sbtn:hover{border-color:var(--amber);color:var(--amber)}
 .sbtn.del:hover{border-color:var(--red);color:var(--red)}
-.src-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.src-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .sf{background:var(--panel);border-radius:6px;padding:8px 12px}
-.sf-lbl{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-bottom:4px}
-.sf-v{font-family:var(--mono);font-size:13px;color:var(--text-bright)}
+.sf-lbl{font-family:var(--mono);font-size:12px;color:var(--text-dim);letter-spacing:2px;margin-bottom:4px}
+.sf-v{font-family:var(--mono);font-size:16px;color:var(--text-bright)}
 .sf-v.today{color:var(--amber)}
 .sf-v.ok{color:var(--green)}.sf-v.warn{color:var(--amber)}.sf-v.low{color:var(--red)}
 .dbar-wrap{background:var(--border);border-radius:3px;height:4px;margin-top:6px;overflow:hidden}
@@ -80,9 +80,9 @@ select option{background:var(--panel2)}
 .slf-v{font-family:var(--mono);font-size:22px;color:var(--green);font-weight:700}
 .slf-desc{font-size:12px;color:var(--text-dim);margin-left:auto}
 .tbl-wrap{overflow-x:auto;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
-th{background:rgba(245,166,35,.08);color:var(--amber);padding:8px 12px;text-align:left;letter-spacing:1px;border-bottom:1px solid var(--border2);white-space:nowrap}
-td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:14px}
+th{background:rgba(245,166,35,.08);color:var(--amber);padding:6px 7px;text-align:center;letter-spacing:1px;border-bottom:1px solid var(--border2);white-space:nowrap;font-size:12px}
+td{padding:6px 7px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
 tr.selected td{background:var(--amber-dim);color:var(--amber)}
 tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 .fv{color:var(--green);font-weight:700}
@@ -93,17 +93,17 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 .bsm.ghost:hover{color:var(--text)}
 .error-msg{background:var(--red-dim);border:1px solid rgba(255,79,79,.3);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--red);margin-top:12px;display:none}
 #resultCard{display:none}
-.res-src-info{font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-bottom:16px;padding:10px 14px;background:var(--amber-dim);border-radius:6px;border-left:3px solid var(--amber);line-height:1.8}
+.res-src-info{font-family:var(--mono);font-size:14px;color:var(--text-dim);margin-bottom:16px;padding:10px 14px;background:var(--amber-dim);border-radius:6px;border-left:3px solid var(--amber);line-height:1.8}
 .res-src-info b{color:var(--amber)}
 .res-main{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:6px}
 .res-num{font-family:var(--mono);font-size:clamp(40px,8vw,64px);color:var(--amber);line-height:1;text-shadow:0 0 40px rgba(245,166,35,.4)}
 .res-unit{font-family:var(--mono);font-size:18px;color:var(--text-dim);padding-bottom:8px}
 .res-alt{font-family:var(--mono);font-size:13px;color:var(--text-dim);margin-bottom:4px}
 .res-alt span{color:var(--blue)}
-.breakdown{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.breakdown{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .bk{background:var(--panel2);border-radius:8px;padding:10px 14px}
-.bk-lbl{font-size:10px;color:var(--text-dim);font-family:var(--mono);letter-spacing:2px;margin-bottom:4px}
-.bk-v{font-family:var(--mono);font-size:14px;color:var(--text-bright)}
+.bk-lbl{font-size:13px;color:var(--text-dim);font-family:var(--mono);letter-spacing:2px;margin-bottom:4px}
+.bk-v{font-family:var(--mono);font-size:16px;color:var(--text-bright)}
 #dblExtra{display:none}
 #dblExtra.show{display:block}
 @keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
@@ -189,9 +189,10 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
   <div class="card-hd">厚度係數對照表<span class="hd-line"></span></div>
   <div class="tbl-wrap">
     <table><thead><tr>
-      <th>厚度(mm)</th><th>曝光係數 F</th>
-      <th>厚度(mm)</th><th>曝光係數 F</th>
-      <th>厚度(mm)</th><th>曝光係數 F</th>
+      <th>mm</th><th>F</th>
+      <th>mm</th><th>F</th>
+      <th>mm</th><th>F</th>
+      <th>mm</th><th>F</th>
     </tr></thead><tbody id="factorTbody"></tbody></table>
   </div>
   <div style="margin-top:8px;font-size:11px;color:var(--text-dim);font-family:var(--mono)">▸ 點擊任一列自動帶入厚度與係數 &nbsp;|&nbsp; 資料來源：放射線檢測曝光係數表（1~89mm）</div>
@@ -419,21 +420,25 @@ function setWall(w){
 }
 
 function renderTable(){
-  // Display in 3-column layout: rows of (mm1,f1 | mm2,f2 | mm3,f3)
   const entries = FT;
-  const perCol = Math.ceil(entries.length/3);
-  const col1 = entries.slice(0, perCol);
-  const col2 = entries.slice(perCol, perCol*2);
-  const col3 = entries.slice(perCol*2);
-  const maxRows = Math.max(col1.length, col2.length, col3.length);
+  const perCol = Math.ceil(entries.length/4);
+  const cols = [
+    entries.slice(0, perCol),
+    entries.slice(perCol, perCol*2),
+    entries.slice(perCol*2, perCol*3),
+    entries.slice(perCol*3)
+  ];
+  const maxRows = Math.max(...cols.map(c=>c.length));
   let rows = '';
   for(let i=0;i<maxRows;i++){
-    const a=col1[i], b=col2[i], c=col3[i];
-    rows += `<tr>
-      ${a?`<td onclick="pickMm(${a.rep})" style="cursor:pointer">${a.rep}</td><td class="fv" onclick="pickMm(${a.rep})" style="cursor:pointer">${a.f}</td>`:'<td></td><td></td>'}
-      ${b?`<td onclick="pickMm(${b.rep})" style="cursor:pointer">${b.rep}</td><td class="fv" onclick="pickMm(${b.rep})" style="cursor:pointer">${b.f}</td>`:'<td></td><td></td>'}
-      ${c?`<td onclick="pickMm(${c.rep})" style="cursor:pointer">${c.rep}</td><td class="fv" onclick="pickMm(${c.rep})" style="cursor:pointer">${c.f}</td>`:'<td></td><td></td>'}
-    </tr>`;
+    rows += '<tr>';
+    cols.forEach(col=>{
+      const e=col[i];
+      rows += e
+        ? `<td onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.rep}</td><td class="fv" onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.f}</td>`
+        : '<td></td><td></td>';
+    });
+    rows += '</tr>';
   }
   g('factorTbody').innerHTML = rows;
 }
@@ -530,6 +535,30 @@ if(!ok){
   addSrc({name:'Se-75 射源 B',isotope:'Se75',calDate:'2024-12-01',calStrength:8,calUnit:'Ci',halfLifeDays:119.78});
 }
 renderTable();
+</script>
+
+<footer style="margin-top:48px;padding:28px 16px 40px;text-align:center;border-top:1px solid var(--border);position:relative;z-index:1">
+  <div style="font-family:var(--mono);font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:6px">DESIGNED &amp; BUILT BY</div>
+  <div style="font-family:var(--mono);font-size:20px;color:var(--amber);letter-spacing:3px;margin-bottom:24px">楊晴雄</div>
+  <button onclick="addToHome()" style="display:inline-flex;align-items:center;gap:10px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.4);color:var(--amber);font-family:var(--mono);font-size:14px;letter-spacing:2px;padding:14px 28px;border-radius:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--amber)';this.style.color='#000'" onmouseout="this.style.background='var(--amber-dim)';this.style.color='var(--amber)'">
+    <span style="font-size:20px">⊞</span> 加入主畫面
+  </button>
+  <div id="homeHint" style="margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--text-dim);line-height:1.8;display:none"></div>
+</footer>
+<script>
+function addToHome(){
+  const hint = document.getElementById('homeHint');
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  hint.style.display='block';
+  if(isIOS){
+    hint.innerHTML='📱 iPhone 步驟：<br>1. 點底部 <b style="color:var(--amber)">分享按鈕 □↑</b><br>2. 選「<b style="color:var(--amber)">加入主畫面</b>」<br>3. 點右上角「新增」';
+  } else if(isAndroid){
+    hint.innerHTML='📱 Android 步驟：<br>1. 點右上角 <b style="color:var(--amber)">⋮ 三個點</b><br>2. 選「<b style="color:var(--amber)">新增到主畫面</b>」<br>3. 點「新增」確認';
+  } else {
+    hint.innerHTML='💻 手機開啟此網址後，用瀏覽器的「加入主畫面」功能即可。';
+  }
+}
 </script>
 </body>
 </html>
