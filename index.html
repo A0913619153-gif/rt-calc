@@ -145,7 +145,7 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
   <div id="dblExtra">
     <div class="field" style="margin-top:12px;margin-bottom:0">
       <label>對面管壁厚度 T₂（mm）</label>
-      <input type="number" id="thickness2" placeholder="輸入對面壁厚 mm" min="0.5" step="0.5">
+      <input type="number" id="thickness2" placeholder="輸入對面壁厚 mm" min="0.5" step="0.5" oninput="onT2Input()">
     </div>
   </div>
 </div>
@@ -435,7 +435,7 @@ function renderTable(){
     cols.forEach(col=>{
       const e=col[i];
       rows += e
-        ? `<td onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.rep}</td><td class="fv" onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.f}</td>`
+        ? `<td data-mm="${e.rep}" onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.rep}</td><td data-mm-f="${e.rep}" class="fv" onclick="pickMm(${e.rep})" style="cursor:pointer;font-size:12px">${e.f}</td>`
         : '<td></td><td></td>';
     });
     rows += '</tr>';
@@ -445,16 +445,15 @@ function renderTable(){
 
 function hiRow(mm){
   document.querySelectorAll('#factorTbody td').forEach(td=>{
-    td.style.background='';td.style.color='';
+    td.style.background='';td.style.color='';td.style.fontWeight='';
   });
-  rowIdx=mm;
-  // highlight matching cells
-  document.querySelectorAll('#factorTbody td').forEach(td=>{
-    if(td.textContent==String(mm)&&!td.classList.contains('fv')){
-      td.style.background='rgba(245,166,35,0.2)';td.style.color='var(--amber)';
-      const next=td.nextElementSibling;
-      if(next){next.style.background='rgba(245,166,35,0.2)';next.style.color='var(--amber)';}
-    }
+  if(!mm) return;
+  const key = String(mm);
+  document.querySelectorAll(`#factorTbody td[data-mm="${key}"]`).forEach(td=>{
+    td.style.background='rgba(245,166,35,0.25)';td.style.color='var(--amber)';td.style.fontWeight='700';
+  });
+  document.querySelectorAll(`#factorTbody td[data-mm-f="${key}"]`).forEach(td=>{
+    td.style.background='rgba(245,166,35,0.25)';td.style.color='var(--amber)';td.style.fontWeight='700';
   });
 }
 
@@ -472,9 +471,33 @@ function showF(f,desc){
 }
 
 function onThickInput(){
-  const t=parseFloat(g('thickness').value);if(isNaN(t)||t<=0)return;
-  const f=getFactor(t);
-  if(f!==null){rowIdx=Math.round(t);showF(f,`厚度 ${Math.round(t)} mm`);hiRow(Math.round(t));}
+  const t1=parseFloat(g('thickness').value);if(isNaN(t1)||t1<=0)return;
+  if(wall==='double-si'){
+    const t2el=document.getElementById('thickness2');
+    const t2=t2el?parseFloat(t2el.value):NaN;
+    if(!isNaN(t2)&&t2>0){
+      const total=t1+t2;
+      const f=getFactor(total);
+      if(f!==null){showF(f,`T₁(${t1})+T₂(${t2}) = ${total} mm`);hiRow(Math.round(total));}
+    } else {
+      const f=getFactor(t1);
+      if(f!==null) showF(f,`T₁ = ${t1} mm（待輸入T₂）`);
+      hiRow(null);
+    }
+  } else {
+    const tEff = wall==='double-di' ? t1*2 : t1;
+    const f=getFactor(tEff);
+    if(f!==null){rowIdx=Math.round(tEff);showF(f,`厚度 ${tEff} mm`);hiRow(Math.round(tEff));}
+  }
+}
+
+function onT2Input(){
+  const t1=parseFloat(g('thickness').value);
+  const t2=parseFloat(g('thickness2').value);
+  if(isNaN(t1)||t1<=0||isNaN(t2)||t2<=0)return;
+  const total=t1+t2;
+  const f=getFactor(total);
+  if(f!==null){showF(f,`T₁(${t1})+T₂(${t2}) = ${total} mm`);hiRow(Math.round(total));}
 }
 
 function findRow(tEff){
@@ -487,10 +510,11 @@ function getThick(){
   if(wall==='single')return{tEff:t1,label:`T = ${t1} mm（單壁）`};
   if(wall==='double-di')return{tEff:t1*2,label:`2×T₁ = ${t1*2} mm（雙壁雙影）`};
   // double-si：T₁+T₂ 合計後查係數表
-  const t2=parseFloat(g('thickness2').value);
+  const t2el = document.getElementById('thickness2');
+  const t2 = t2el ? parseFloat(t2el.value) : NaN;
   if(isNaN(t2)||t2<=0)return null;
-  const total=t1+t2;
-  return{tEff:total,label:`T₁(${t1})+T₂(${t2}) = ${total} mm（雙壁單影）`};
+  const total = parseFloat((t1+t2).toFixed(4));
+  return{tEff:total, t1:t1, t2:t2, label:`T₁(${t1})+T₂(${t2}) = ${total} mm（雙壁單影）`};
 }
 
 function calculate(){
@@ -514,16 +538,22 @@ function calculate(){
   const wl={single:'單壁單影','double-si':'雙壁單影','double-di':'雙壁雙影'}[wall];
   g('resSrcInfo').innerHTML=`<b>${src.name}（${IL[src.isotope]}）</b><br>今日強度：${d.ci.toFixed(4)} Ci（${d.gbq.toFixed(2)} GBq） · 已過 ${d.days} 天 · 剩餘 ${d.pct.toFixed(1)}%`;
   g('resNum').textContent=dn;g('resUnit').textContent=du;g('resAlt').innerHTML=da;
+  const dwsiExtra = wall==='double-si' ? `
+    <div class="bk"><div class="bk-lbl">近射源壁 T₁</div><div class="bk-v">${tr.t1} mm</div></div>
+    <div class="bk"><div class="bk-lbl">對面壁 T₂</div><div class="bk-v">${tr.t2} mm</div></div>
+    <div class="bk"><div class="bk-lbl">T₁ + T₂</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>` : '';
   g('breakdown').innerHTML=`
     <div class="bk"><div class="bk-lbl">拍攝方式</div><div class="bk-v" style="color:var(--blue)">${wl}</div></div>
     <div class="bk"><div class="bk-lbl">距離 D</div><div class="bk-v">${D} inch</div></div>
     <div class="bk"><div class="bk-lbl">D²</div><div class="bk-v">${(D*D).toFixed(0)}</div></div>
-    <div class="bk"><div class="bk-lbl">有效厚度</div><div class="bk-v" style="font-size:11px">${tr.label}</div></div>
+    ${dwsiExtra}
+    <div class="bk"><div class="bk-lbl">有效厚度</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>
     <div class="bk"><div class="bk-lbl">係數 F</div><div class="bk-v">${F}</div></div>
     <div class="bk"><div class="bk-lbl">A(今日)Ci</div><div class="bk-v">${d.ci.toFixed(4)}</div></div>
     <div class="bk"><div class="bk-lbl">A₀校正值</div><div class="bk-v">${src.calStrength} ${src.calUnit}<br><span style="font-size:10px;color:var(--text-dim)">${src.calDate}</span></div></div>
     <div class="bk"><div class="bk-lbl">T½</div><div class="bk-v">${src.halfLifeDays} 天</div></div>`;
   const rc=g('resultCard');rc.style.display='block';rc.style.animation='none';void rc.offsetWidth;rc.style.animation='fadeU .4s ease both';
+  hiRow(Math.round(tr.tEff));
 }
 
 function err(msg){g('errMsg').textContent='⚠ '+msg;g('errMsg').style.display='block';}
