@@ -548,16 +548,20 @@ renderTable();
 <script>
 function addToHome(){
   const hint = document.getElementById('homeHint');
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
   hint.style.display='block';
-  if(isIOS){
-    hint.innerHTML='📱 iPhone 步驟：<br>1. 點底部 <b style="color:var(--amber)">分享按鈕 □↑</b><br>2. 選「<b style="color:var(--amber)">加入主畫面</b>」<br>3. 點右上角「新增」';
-  } else if(isAndroid){
-    hint.innerHTML='📱 Android 步驟：<br>1. 點右上角 <b style="color:var(--amber)">⋮ 三個點</b><br>2. 選「<b style="color:var(--amber)">新增到主畫面</b>」<br>3. 點「新增」確認';
-  } else {
-    hint.innerHTML='💻 手機開啟此網址後，用瀏覽器的「加入主畫面」功能即可。';
-  }
+  hint.innerHTML=`
+    <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:12px 14px;margin-bottom:10px;text-align:left">
+      <div style="color:var(--amber);margin-bottom:6px;font-size:13px">🍎 iPhone / iPad（Safari）</div>
+      1. 點底部 <b style="color:var(--amber)">分享按鈕 □↑</b><br>
+      2. 選「<b style="color:var(--amber)">加入主畫面</b>」<br>
+      3. 點右上角「<b style="color:var(--amber)">新增</b>」
+    </div>
+    <div style="background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.2);border-radius:8px;padding:12px 14px;text-align:left">
+      <div style="color:var(--blue);margin-bottom:6px;font-size:13px">🤖 Android（Chrome）</div>
+      1. 點右上角 <b style="color:var(--blue)">⋮ 三個點</b><br>
+      2. 選「<b style="color:var(--blue)">新增到主畫面</b>」<br>
+      3. 點「<b style="color:var(--blue)">新增</b>」確認
+    </div>`;
 }
 </script>
 </body>
