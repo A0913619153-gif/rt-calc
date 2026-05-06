@@ -114,14 +114,20 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 <body>
 <div class="wrap">
 <header>
-  <div class="badge"><span class="badge-dot"></span><span>NDT SYSTEM ONLINE</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div class="badge"><span class="badge-dot"></span><span>NDT SYSTEM ONLINE</span></div>
+    <div style="display:flex;border:1px solid var(--border2);border-radius:6px;overflow:hidden">
+      <button id="btnZH" onclick="setLang('zh')" style="padding:6px 14px;background:var(--amber);color:#000;border:none;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px">繁中</button>
+      <button id="btnEN" onclick="setLang('en')" style="padding:6px 14px;background:var(--panel2);color:var(--text-dim);border:none;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:1px">EN</button>
+    </div>
+  </div>
   <h1>RT 曝光時間計算器<small>RADIOGRAPHIC TESTING · EXPOSURE TIME CALCULATOR</small></h1>
   <div class="formula-banner">
-    <span class="var">曝光時間</span> = <span class="eq">( D² × F ) ÷ A(t)</span><br>
+    <span id="fmTitleEl"><span class="var" id="fmTitleText">曝光時間</span></span> = <span class="eq">( D² × F ) ÷ A(t)</span><br>
     <span style="font-size:12px">
-      <span class="var">D</span> = 射源距離(inch) &nbsp;|&nbsp;
+      <span id="fmVarsEl"><span class="var">D</span> = 射源距離(inch) &nbsp;|&nbsp;
       <span class="var">F</span> = 厚度係數 &nbsp;|&nbsp;
-      <span class="var">A(t)</span> = A₀ × 2^(−t / T½)（今日衰減後強度）
+      <span class="var">A(t)</span> = A₀ × 2^(−t / T½)（今日衰減後強度）</span>
     </span>
   </div>
 </header>
@@ -129,50 +135,50 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 <div class="layout">
 
 <div class="card full" style="animation-delay:.0s">
-  <div class="card-hd">射源管理<span class="hd-line"></span></div>
+  <div class="card-hd"><span id="hdSrcMgr">射源管理</span><span class="hd-line"></span></div>
   <div id="sourceList"></div>
-  <button class="card-hd-btn" onclick="addSource()" style="margin-top:14px;width:100%;padding:10px;font-size:13px;border-radius:8px">＋ 新增射源</button>
+  <button id="btnAddSrc" class="card-hd-btn" onclick="addSource()" style="margin-top:14px;width:100%;padding:10px;font-size:13px;border-radius:8px">＋ 新增射源</button>
 </div>
 
 <div class="card full" style="animation-delay:.08s">
-  <div class="card-hd">拍攝方式<span class="hd-line"></span></div>
+  <div class="card-hd"><span id="hdShoot">拍攝方式</span><span class="hd-line"></span></div>
   <div class="wall-tog">
-    <button id="btnSW" class="active" onclick="setWall('single')"><span class="wi">◎</span><span class="wl">單壁單影</span><span class="ws">SWSI</span></button>
-    <button id="btnDWSI" onclick="setWall('double-si')"><span class="wi">◉</span><span class="wl">雙壁單影</span><span class="ws">DWSI</span></button>
-    <button id="btnDWDI" onclick="setWall('double-di')"><span class="wi">⦿</span><span class="wl">雙壁雙影</span><span class="ws">DWDI</span></button>
+    <button id="btnSW" class="active" onclick="setWall('single')"><span class="wi">◎</span><span class="wl" id="wlSW">單壁單影</span><span class="ws">SWSI</span></button>
+    <button id="btnDWSI" onclick="setWall('double-si')"><span class="wi">◉</span><span class="wl" id="wlDWSI">雙壁單影</span><span class="ws">DWSI</span></button>
+    <button id="btnDWDI" onclick="setWall('double-di')"><span class="wi">⦿</span><span class="wl" id="wlDWDI">雙壁雙影</span><span class="ws">DWDI</span></button>
   </div>
   <div class="wall-info" id="wallInfo"><b>單壁單影（SWSI）</b>射源在管外，底片貼管外壁，穿透單層管壁成像。有效厚度 = T。適用大管徑或平板。</div>
   <div id="dblExtra">
     <div class="field" style="margin-top:12px;margin-bottom:0">
-      <label>對面管壁厚度 T₂（mm）</label>
+      <label id="t2Label">對面管壁厚度 T₂（mm）</label>
       <input type="number" id="thickness2" placeholder="輸入對面壁厚 mm" min="0.5" step="0.5" oninput="onT2Input()">
     </div>
   </div>
 </div>
 
 <div class="card" style="animation-delay:.12s">
-  <div class="card-hd">計算用射源<span class="hd-line"></span></div>
+  <div class="card-hd"><span id="hdCalcSrc">計算用射源</span><span class="hd-line"></span></div>
   <div class="field">
-    <label>選擇射源</label>
-    <select id="calcSel" onchange="onCalcSelChange()"><option value="">— 請先新增射源 —</option></select>
+    <label id="selSrcLabel">選擇射源</label>
+    <select id="calcSel" onchange="onCalcSelChange()"><option value="">— 請選擇射源 —</option></select>
   </div>
   <div id="calcPreview" style="display:none">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div class="sf"><div class="sf-lbl">今日強度</div><div class="sf-v today" id="pvStr">—</div></div>
-      <div class="sf"><div class="sf-lbl">衰減天數</div><div class="sf-v" id="pvDays">—</div></div>
-      <div class="sf"><div class="sf-lbl">剩餘比例</div><div class="sf-v" id="pvPct">—</div></div>
-      <div class="sf"><div class="sf-lbl">校正強度</div><div class="sf-v" id="pvOrig">—</div></div>
+      <div class="sf"><div class="sf-lbl" id="pvStrLbl">今日強度</div><div class="sf-v today" id="pvStr">—</div></div>
+      <div class="sf"><div class="sf-lbl" id="pvDaysLbl">衰減天數</div><div class="sf-v" id="pvDays">—</div></div>
+      <div class="sf"><div class="sf-lbl" id="pvPctLbl">剩餘比例</div><div class="sf-v" id="pvPct">—</div></div>
+      <div class="sf"><div class="sf-lbl" id="pvOrigLbl">校正強度</div><div class="sf-v" id="pvOrig">—</div></div>
     </div>
   </div>
   <div class="field">
-    <label>射源至底片距離 D（inch）</label>
-    <input type="number" id="distance" placeholder="例如：700" min="1" step="1">
+    <label id="distLabel">射源至底片距離 D（inch）</label>
+    <input type="number" id="distance" placeholder="例如：27" min="1" step="1">
   </div>
 </div>
 
 <div class="card" style="animation-delay:.16s">
-  <div class="card-hd">工件參數<span class="hd-line"></span></div>
-  <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--panel2);border-radius:6px;padding:8px 12px;margin-bottom:14px">
+  <div class="card-hd"><span id="hdWork">工件參數</span><span class="hd-line"></span></div>
+  <div id="wpInfo" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--panel2);border-radius:6px;padding:8px 12px;margin-bottom:14px">
     係數表依實際放射線檢測曝光係數表，適用 Ir-192 鋼材，厚度 1~89 mm
   </div>
   <div class="field">
@@ -186,7 +192,7 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
 </div>
 
 <div class="card full" style="animation-delay:.2s">
-  <div class="card-hd">厚度係數對照表<span class="hd-line"></span></div>
+  <div class="card-hd"><span id="hdFactor">厚度係數對照表</span><span class="hd-line"></span></div>
   <div class="tbl-wrap">
     <table><thead><tr>
       <th>mm</th><th>F</th>
@@ -195,16 +201,16 @@ tr:not(.selected):hover td{background:var(--panel2);cursor:pointer}
       <th>mm</th><th>F</th>
     </tr></thead><tbody id="factorTbody"></tbody></table>
   </div>
-  <div style="margin-top:8px;font-size:11px;color:var(--text-dim);font-family:var(--mono)">▸ 點擊任一列自動帶入厚度與係數 &nbsp;|&nbsp; 資料來源：放射線檢測曝光係數表（1~89mm）</div>
+  <div id="tableHint" style="margin-top:8px;font-size:11px;color:var(--text-dim);font-family:var(--mono)">▸ 點擊任一列自動帶入厚度與係數 &nbsp;|&nbsp; 資料來源：放射線檢測曝光係數表（1~89mm）</div>
 </div>
 
 <div class="card full" style="animation-delay:.24s">
-  <div class="card-hd">計算結果<span class="hd-line"></span></div>
-  <button class="btn-calc" onclick="calculate()">▶ &nbsp;計算曝光時間</button>
+  <div class="card-hd"><span id="hdResult">計算結果</span><span class="hd-line"></span></div>
+  <button id="calcBtn" class="btn-calc" onclick="calculate()">▶ &nbsp;計算曝光時間</button>
   <div class="error-msg" id="errMsg"></div>
   <div id="resultCard" style="margin-top:24px">
     <div class="res-src-info" id="resSrcInfo"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px">曝光時間</div>
+    <div id="resTimeLabel" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px">曝光時間</div>
     <div class="res-main">
       <div class="res-num" id="resNum">—</div>
       <div class="res-unit" id="resUnit">秒</div>
@@ -234,7 +240,7 @@ const FT_RAW = {
   36:0.526,37:0.552,38:0.580,39:0.620,40:0.660,
   41:0.700,42:0.750,43:0.800,44:0.850,45:0.900,
   46:0.946,47:0.990,48:1.070,49:1.140,50:1.225,
-  51:0.125,52:1.330,53:1.420,54:1.500,55:1.590,
+  51:1.250,52:1.330,53:1.420,54:1.500,55:1.590,
   56:1.650,57:1.740,58:1.820,59:1.900,60:1.980,
   61:2.070,62:2.170,63:2.270,64:2.370,65:2.510,
   66:2.650,67:2.800,68:2.990,69:3.180,70:3.370,
@@ -281,12 +287,12 @@ function pc(p){return p>50?'ok':p>20?'warn':'low';}
 
 function sHtml(s){
   const d=calcDecay(s);
-  if(!d) return '<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:6px 0">填寫校正日期與強度後自動計算衰減</div>';
+  if(!d) return `<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:6px 0">${T('noDecay')}</div>`;
   const c=pc(d.pct);
-  return `<div class="sf"><div class="sf-lbl">今日強度(Ci)</div><div class="sf-v today">${d.ci.toFixed(4)}</div></div>
-    <div class="sf"><div class="sf-lbl">今日強度(GBq)</div><div class="sf-v today">${d.gbq.toFixed(2)}</div></div>
-    <div class="sf"><div class="sf-lbl">已衰減天數</div><div class="sf-v">${d.days} 天</div></div>
-    <div class="sf"><div class="sf-lbl">剩餘比例</div><div class="sf-v ${c}">${d.pct.toFixed(1)}%</div>
+  return `<div class="sf"><div class="sf-lbl">${T("todayCi")}</div><div class="sf-v today">${d.ci.toFixed(4)}</div></div>
+    <div class="sf"><div class="sf-lbl">${T("todayGbq")}</div><div class="sf-v today">${d.gbq.toFixed(2)}</div></div>
+    <div class="sf"><div class="sf-lbl">${T("decayedDays")}</div><div class="sf-v">${d.days} ${currentLang==='zh'?'天':'days'}</div></div>
+    <div class="sf"><div class="sf-lbl">${T("remain")}</div><div class="sf-v ${c}">${d.pct.toFixed(1)}%</div>
     <div class="dbar-wrap"><div class="dbar ${c}" style="width:${Math.min(100,d.pct).toFixed(1)}%"></div></div></div>`;
 }
 
@@ -335,48 +341,48 @@ function setF(id,field,val){
 
 function renderList(){
   const el=g('sourceList');
-  if(!sources.length){el.innerHTML='<div style="font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:center;padding:24px">尚無射源，點擊「＋ 新增射源」開始建立</div>';return;}
+  if(!sources.length){el.innerHTML=`<div style="font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:center;padding:24px">${T('noSrc')}</div>`;return;}
   el.innerHTML=sources.map((s,i)=>`
   <div class="src-card" id="c_${s.id}">
     <div class="src-top">
-      <span class="src-num">台 ${i+1}</span>
+      <span class="src-num">${currentLang==='en'?'No.':'台 '}${i+1}</span>
       <span class="src-name" id="nd_${s.id}">${s.name}</span>
       <span class="src-badge" id="bg_${s.id}">${IL[s.isotope]||'自訂'}</span>
       <div class="src-actions">
-        <button class="sbtn" onclick="tog('${s.id}')">編輯</button>
-        <button class="sbtn del" onclick="delSrc('${s.id}')">刪除</button>
+        <button class="sbtn" onclick="tog('${s.id}')">${T('editBtn')}</button>
+        <button class="sbtn del" onclick="delSrc('${s.id}')">${T('delBtn')}</button>
       </div>
     </div>
     <div class="src-stats" id="st_${s.id}">${sHtml(s)}</div>
     <div class="src-edit" id="edit_${s.id}">
       <div class="row2">
-        <div class="field"><label>射源名稱</label><input type="text" value="${s.name}" oninput="setF('${s.id}','name',this.value)"></div>
-        <div class="field"><label>同位素種類</label>
+        <div class="field"><label>${T('srcName')}</label><input type="text" value="${s.name}" oninput="setF('${s.id}','name',this.value)"></div>
+        <div class="field"><label>${T('isotope')}</label>
           <select onchange="setF('${s.id}','isotope',this.value)">
-            <option value="Ir192" ${s.isotope==='Ir192'?'selected':''}>Ir-192（T½=73.83天）</option>
-            <option value="Se75"  ${s.isotope==='Se75'?'selected':''}>Se-75（T½=119.78天）</option>
-            <option value="Co60"  ${s.isotope==='Co60'?'selected':''}>Co-60（T½=1925.5天）</option>
-            <option value="Yb169" ${s.isotope==='Yb169'?'selected':''}>Yb-169（T½=32.01天）</option>
-            <option value="custom" ${s.isotope==='custom'?'selected':''}>自訂同位素</option>
+            <option value="Ir192" ${s.isotope==='Ir192'?'selected':''}>Ir-192（T½=73.83${currentLang==='en'?' days':'天'}）</option>
+            <option value="Se75"  ${s.isotope==='Se75'?'selected':''}>Se-75（T½=119.78${currentLang==='en'?' days':'天'}）</option>
+            <option value="Co60"  ${s.isotope==='Co60'?'selected':''}>Co-60（T½=1925.5${currentLang==='en'?' days':'天'}）</option>
+            <option value="Yb169" ${s.isotope==='Yb169'?'selected':''}>Yb-169（T½=32.01${currentLang==='en'?' days':'天'}）</option>
+            <option value="custom" ${s.isotope==='custom'?'selected':''}>${currentLang==='en'?'Custom Isotope':'自訂同位素'}</option>
           </select>
         </div>
       </div>
       <div id="hlw_${s.id}" style="display:${s.isotope==='custom'?'block':'none'}" class="field">
-        <label>自訂半衰期（天）</label>
-        <input type="number" id="hli_${s.id}" value="${s.halfLifeDays||''}" placeholder="輸入天數" min="0.1" step="0.1" oninput="setF('${s.id}','halfLifeDays',this.value)">
+        <label>${T('hlDays')}</label>
+        <input type="number" id="hli_${s.id}" value="${s.halfLifeDays||''}" placeholder="${currentLang==='en'?'Enter days':'輸入天數'}" min="0.1" step="0.1" oninput="setF('${s.id}','halfLifeDays',this.value)">
       </div>
-      <div class="field"><label>校正日期</label><input type="date" value="${s.calDate||''}" onchange="setF('${s.id}','calDate',this.value)"></div>
+      <div class="field"><label>${T('calDate')}</label><input type="date" value="${s.calDate||''}" onchange="setF('${s.id}','calDate',this.value)"></div>
       <div class="row2">
-        <div class="field"><label>校正時強度</label><input type="number" value="${s.calStrength||''}" placeholder="數值" min="0.001" step="0.01" oninput="setF('${s.id}','calStrength',this.value)"></div>
-        <div class="field"><label>強度單位</label>
+        <div class="field"><label>${T('calStrength')}</label><input type="number" value="${s.calStrength||''}" placeholder="${currentLang==='en'?'Value':'數值'}" min="0.001" step="0.01" oninput="setF('${s.id}','calStrength',this.value)"></div>
+        <div class="field"><label>${T('calUnit')}</label>
           <select onchange="setF('${s.id}','calUnit',this.value)">
-            <option value="Ci"  ${s.calUnit==='Ci'?'selected':''}>Ci（居里）</option>
+            <option value="Ci"  ${s.calUnit==='Ci'?'selected':''}>Ci${currentLang==='en'?'':''}</option>
             <option value="GBq" ${s.calUnit==='GBq'?'selected':''}>GBq</option>
           </select>
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:4px">
-        <button class="bsm ghost" onclick="tog('${s.id}')">收起</button>
+        <button class="bsm ghost" onclick="tog('${s.id}')">${T('collapseBtn')}</button>
       </div>
     </div>
   </div>`).join('');
@@ -384,7 +390,7 @@ function renderList(){
 
 function refreshSel(){
   const sel=g('calcSel'),prev=sel.value;
-  sel.innerHTML='<option value="">— 請選擇射源 —</option>'+sources.map(s=>`<option value="${s.id}">${s.name}（${IL[s.isotope]}）</option>`).join('');
+  sel.innerHTML=`<option value="">${T('selSrc')}</option>`+sources.map(s=>`<option value="${s.id}">${s.name}（${IL[s.isotope]}）</option>`).join('');
   if(sources.find(s=>s.id===prev))sel.value=prev;
   onCalcSelChange();
 }
@@ -413,8 +419,8 @@ function setWall(w){
   wall=w;
   ['btnSW','btnDWSI','btnDWDI'].forEach(id=>g(id).classList.remove('active'));
   g({single:'btnSW','double-si':'btnDWSI','double-di':'btnDWDI'}[w]).classList.add('active');
-  const info=WD[w];
-  g('wallInfo').innerHTML=`<b>${info.title}</b>${info.desc}`;
+  const info=LANG[currentLang].wallDesc[w]||WD[w];
+  g('wallInfo').innerHTML=info;
   g('dblExtra').classList.toggle('show',w==='double-si');
   g('thickLbl').textContent=w==='single'?'工件厚度（mm）—— 從下表選擇或直接輸入':w==='double-si'?'近射源側管壁厚度 T₁（mm）':'管壁厚度 T₁（mm）—— 雙壁雙影用 2×T₁';
 }
@@ -535,28 +541,200 @@ function calculate(){
   let dn,du,da;
   if(T<60){dn=T.toFixed(1);du='秒';da=`約 <span>${Tm.toFixed(2)}</span> 分鐘`;}
   else{dn=Tm.toFixed(2);du='分鐘';da=`即 <span>${T.toFixed(0)}</span> 秒`;}
-  const wl={single:'單壁單影','double-si':'雙壁單影','double-di':'雙壁雙影'}[wall];
-  g('resSrcInfo').innerHTML=`<b>${src.name}（${IL[src.isotope]}）</b><br>今日強度：${d.ci.toFixed(4)} Ci（${d.gbq.toFixed(2)} GBq） · 已過 ${d.days} 天 · 剩餘 ${d.pct.toFixed(1)}%`;
+  const wl={single:currentLang==='en'?'SWSI':'單壁單影','double-si':currentLang==='en'?'DWSI':'雙壁單影','double-di':currentLang==='en'?'DWDI':'雙壁雙影'}[wall];
+  g('resSrcInfo').innerHTML=`<b>${src.name}（${IL[src.isotope]}）</b><br>${currentLang==='en'?"Today's Activity":'今日強度'}：${d.ci.toFixed(4)} Ci（${d.gbq.toFixed(2)} GBq） · ${currentLang==='en'?'Elapsed':'已過'} ${d.days} ${currentLang==='en'?'days':'天'} · ${currentLang==='en'?'Remaining':'剩餘'} ${d.pct.toFixed(1)}%`;
   g('resNum').textContent=dn;g('resUnit').textContent=du;g('resAlt').innerHTML=da;
   const dwsiExtra = wall==='double-si' ? `
-    <div class="bk"><div class="bk-lbl">近射源壁 T₁</div><div class="bk-v">${tr.t1} mm</div></div>
-    <div class="bk"><div class="bk-lbl">對面壁 T₂</div><div class="bk-v">${tr.t2} mm</div></div>
-    <div class="bk"><div class="bk-lbl">T₁ + T₂</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>` : '';
+    <div class="bk"><div class="bk-lbl">${TB('t1')}</div><div class="bk-v">${tr.t1} mm</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('t2')}</div><div class="bk-v">${tr.t2} mm</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('tsum')}</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>` : '';
   g('breakdown').innerHTML=`
-    <div class="bk"><div class="bk-lbl">拍攝方式</div><div class="bk-v" style="color:var(--blue)">${wl}</div></div>
-    <div class="bk"><div class="bk-lbl">距離 D</div><div class="bk-v">${D} inch</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('mode')}</div><div class="bk-v" style="color:var(--blue)">${wl}</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('dist')}</div><div class="bk-v">${D} inch</div></div>
     <div class="bk"><div class="bk-lbl">D²</div><div class="bk-v">${(D*D).toFixed(0)}</div></div>
     ${dwsiExtra}
-    <div class="bk"><div class="bk-lbl">有效厚度</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>
-    <div class="bk"><div class="bk-lbl">係數 F</div><div class="bk-v">${F}</div></div>
-    <div class="bk"><div class="bk-lbl">A(今日)Ci</div><div class="bk-v">${d.ci.toFixed(4)}</div></div>
-    <div class="bk"><div class="bk-lbl">A₀校正值</div><div class="bk-v">${src.calStrength} ${src.calUnit}<br><span style="font-size:10px;color:var(--text-dim)">${src.calDate}</span></div></div>
-    <div class="bk"><div class="bk-lbl">T½</div><div class="bk-v">${src.halfLifeDays} 天</div></div>`;
+    <div class="bk"><div class="bk-lbl">${TB('teff')}</div><div class="bk-v" style="color:var(--amber)">${tr.tEff} mm</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('factor')}</div><div class="bk-v">${F}</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('aci')}</div><div class="bk-v">${d.ci.toFixed(4)}</div></div>
+    <div class="bk"><div class="bk-lbl">${TB('a0')}</div><div class="bk-v">${src.calStrength} ${src.calUnit}<br><span style="font-size:10px;color:var(--text-dim)">${src.calDate}</span></div></div>
+    <div class="bk"><div class="bk-lbl">${TB('hl')}</div><div class="bk-v">${src.halfLifeDays} ${currentLang==='en'?'days':'天'}</div></div>`;
   const rc=g('resultCard');rc.style.display='block';rc.style.animation='none';void rc.offsetWidth;rc.style.animation='fadeU .4s ease both';
   hiRow(Math.round(tr.tEff));
 }
 
 function err(msg){g('errMsg').textContent='⚠ '+msg;g('errMsg').style.display='block';}
+
+
+// ── LANGUAGE ───────────────────────────────────
+const LANG = {
+  zh: {
+    title: 'RT 曝光時間計算器',
+    subtitle: 'RADIOGRAPHIC TESTING · EXPOSURE TIME CALCULATOR',
+    fmLabel: '曝光時間',
+    fmVars: 'D = 射源距離(inch) | F = 厚度係數 | A(t) = A₀ × 2^(−t / T½)（今日衰減後強度）',
+    srcMgr: '射源管理',
+    addSrc: '＋ 新增射源',
+    shootMode: '拍攝方式',
+    calcSrc: '計算用射源',
+    selSrc: '— 請選擇射源 —',
+    todayStr: '今日強度',
+    decayDays: '衰減天數',
+    remain: '剩餘比例',
+    calVal: '校正強度',
+    distLabel: '射源至底片距離 D（inch）',
+    distPlaceholder: '例如：27',
+    workpiece: '工件參數',
+    thickLabel: '工件厚度（mm）—— 從下表選擇或直接輸入',
+    thickLabelSI: '近射源側管壁厚度 T₁（mm）',
+    thickLabelDI: '管壁厚度 T₁（mm）—— 雙壁雙影用 2×T₁',
+    t2Label: '對面管壁厚度 T₂（mm）',
+    t2Placeholder: '輸入對面壁厚 mm',
+    factorTable: '厚度係數對照表',
+    tableHint: '▸ 點擊列自動帶入厚度係數 | 係數越高穿透難度越高',
+    calcResult: '計算結果',
+    calcBtn: '▶ 計算曝光時間',
+    wallSW: '單壁單影', wallDWSI: '雙壁單影', wallDWDI: '雙壁雙影',
+    wallDesc: {
+      single: '<b>單壁單影（SWSI）</b>射源在管外，底片貼管外壁，穿透單層管壁成像。有效厚度 = T。適用大管徑或平板。',
+      'double-si': '<b>雙壁單影（DWSI）</b>射線穿透兩層管壁，只判讀靠底片側。有效厚度 = T₁ + T₂。適用中型管徑。',
+      'double-di': '<b>雙壁雙影（DWDI）</b>射源偏置，兩焊道同時投影底片。有效厚度 = 2 × T₁。適用小管徑。',
+    },
+    resTime: '曝光時間',
+    bk: { mode:'拍攝方式', dist:'距離 D', dsq:'D²', t1:'近射源壁 T₁', t2:'對面壁 T₂', tsum:'T₁ + T₂', teff:'有效厚度', factor:'係數 F', aci:'A(今日)Ci', a0:'A₀校正值', hl:'T½' },
+    sec:'秒', min:'分鐘', hr:'小時',
+    aboutSec:'約', ieSec:'即', ieSec2:'秒',
+    errSel:'請選擇計算用射源', errSrc:'找不到射源', errDecay:'射源資料不完整，請填寫校正日期與強度',
+    errDist:'請輸入有效的射源距離', errT2:'請輸入 T₁ 及 T₂', errThick:'請輸入工件厚度',
+    errRange:'超出係數表範圍（1~89mm）',
+    editBtn:'編輯', delBtn:'刪除', collapseBtn:'收起',
+    srcName:'射源名稱', isotope:'同位素種類', hlDays:'自訂半衰期（天）',
+    calDate:'校正日期', calStrength:'校正時強度', calUnit:'強度單位',
+    todayCi:'今日強度(Ci)', todayGbq:'今日強度(GBq)', decayedDays:'已衰減天數',
+    noDecay:'填寫校正日期與強度後自動計算衰減',
+    noSrc:'尚無射源，點擊「＋ 新增射源」開始建立',
+    addHomeBtn:'⊞ 加入主畫面',
+    iosSteps:'🍎 iPhone / iPad（Safari）<br>1. 點底部 <b style="color:var(--amber)">分享按鈕 □↑</b><br>2. 選「<b style="color:var(--amber)">加入主畫面</b>」<br>3. 點右上角「<b style="color:var(--amber)">新增</b>」',
+    androidSteps:'🤖 Android（Chrome）<br>1. 點右上角 <b style="color:var(--blue)">⋮ 三個點</b><br>2. 選「<b style="color:var(--blue)">新增到主畫面</b>」<br>3. 點「<b style="color:var(--blue)">新增</b>」確認',
+    madeBy:'DESIGNED & BUILT BY',
+  },
+  en: {
+    title: 'RT Exposure Time Calculator',
+    subtitle: 'RADIOGRAPHIC TESTING · EXPOSURE TIME CALCULATOR',
+    fmLabel: 'Exposure Time',
+    fmVars: 'D = Source-to-Film Distance(inch) | F = Thickness Factor | A(t) = A₀ × 2^(−t / T½) (Today Decayed Activity)',
+    srcMgr: 'Source Management',
+    addSrc: '＋ Add Source',
+    shootMode: 'Shooting Technique',
+    calcSrc: 'Selected Source',
+    selSrc: '— Please Select a Source —',
+    todayStr: "Today's Activity",
+    decayDays: 'Decay Days',
+    remain: 'Remaining %',
+    calVal: 'Cal. Activity',
+    distLabel: 'Source-to-Film Distance D (inch)',
+    distPlaceholder: 'e.g. 27',
+    workpiece: 'Workpiece Parameters',
+    thickLabel: 'Wall Thickness (mm) — Select from table or type',
+    thickLabelSI: 'Source-side Wall Thickness T₁ (mm)',
+    thickLabelDI: 'Wall Thickness T₁ (mm) — DWDI uses 2×T₁',
+    t2Label: 'Far-side Wall Thickness T₂ (mm)',
+    t2Placeholder: 'Enter far-side wall thickness mm',
+    factorTable: 'Thickness Factor Table',
+    tableHint: '▸ Tap row to auto-fill factor | Higher factor = harder penetration',
+    calcResult: 'Calculation Result',
+    calcBtn: '▶ Calculate Exposure Time',
+    wallSW: 'SWSI', wallDWSI: 'DWSI', wallDWDI: 'DWDI',
+    wallDesc: {
+      single: '<b>Single Wall Single Image (SWSI)</b> Source outside pipe, film on outer wall. Effective thickness = T. Suitable for large diameter or flat plate.',
+      'double-si': '<b>Double Wall Single Image (DWSI)</b> Radiation penetrates two walls, only film-side image is evaluated. Effective thickness = T₁ + T₂. Suitable for medium diameter.',
+      'double-di': '<b>Double Wall Double Image (DWDI)</b> Source offset, both weld images projected on film. Effective thickness = 2 × T₁. Suitable for small diameter.',
+    },
+    resTime: 'Exposure Time',
+    bk: { mode:'Technique', dist:'Distance D', dsq:'D²', t1:'Source-side T₁', t2:'Far-side T₂', tsum:'T₁ + T₂', teff:'Eff. Thickness', factor:'Factor F', aci:'A(today) Ci', a0:'A₀ Cal. Value', hl:'T½' },
+    sec:'sec', min:'min', hr:'hr',
+    aboutSec:'~', ieSec:'=', ieSec2:'sec',
+    errSel:'Please select a source', errSrc:'Source not found', errDecay:'Source data incomplete. Please fill in calibration date and activity.',
+    errDist:'Please enter a valid source distance', errT2:'Please enter T₁ and T₂', errThick:'Please enter wall thickness',
+    errRange:'Thickness out of table range (1~89mm)',
+    editBtn:'Edit', delBtn:'Delete', collapseBtn:'Collapse',
+    srcName:'Source Name', isotope:'Isotope', hlDays:'Custom Half-life (days)',
+    calDate:'Calibration Date', calStrength:'Cal. Activity', calUnit:'Unit',
+    todayCi:"Today's Activity (Ci)", todayGbq:"Today's Activity (GBq)", decayedDays:'Days Elapsed',
+    noDecay:'Fill in calibration date and activity to calculate decay.',
+    noSrc:'No sources yet. Tap "Add Source" to begin.',
+    addHomeBtn:'⊞ Add to Home Screen',
+    iosSteps:'🍎 iPhone / iPad (Safari)<br>1. Tap the <b style="color:var(--amber)">Share button □↑</b> at the bottom<br>2. Select "<b style="color:var(--amber)">Add to Home Screen</b>"<br>3. Tap "<b style="color:var(--amber)">Add</b>" in the top right',
+    androidSteps:'🤖 Android (Chrome)<br>1. Tap <b style="color:var(--blue)">⋮ three dots</b> top right<br>2. Select "<b style="color:var(--blue)">Add to Home screen</b>"<br>3. Tap "<b style="color:var(--blue)">Add</b>" to confirm',
+    madeBy:'DESIGNED & BUILT BY',
+  }
+};
+
+let currentLang = 'zh';
+function T(key){ try{ return (LANG[currentLang]||LANG.zh)[key] || LANG.zh[key] || key; }catch(e){ return key; } }
+function TB(key){ try{ return ((LANG[currentLang]||LANG.zh).bk||LANG.zh.bk||{})[key] || key; }catch(e){ return key; } }
+
+function setLang(lang){
+  currentLang = lang;
+  try{ localStorage.setItem('rt_lang', lang); }catch(e){}
+  document.getElementById('btnZH').style.background = lang==='zh'?'var(--amber)':'var(--panel2)';
+  document.getElementById('btnZH').style.color = lang==='zh'?'#000':'var(--text-dim)';
+  document.getElementById('btnEN').style.background = lang==='en'?'var(--amber)':'var(--panel2)';
+  document.getElementById('btnEN').style.color = lang==='en'?'#000':'var(--text-dim)';
+  applyLang();
+}
+
+function applyLang(){
+  const L = LANG[currentLang];
+  // Header
+  document.querySelector('h1').childNodes[0].textContent = L.title;
+  document.querySelector('h1 small').textContent = L.subtitle;
+  document.getElementById('fmVarsEl').innerHTML =
+    `<span class="var">D</span> = ${L.fmVars.split('|')[0].replace('D = ','')} &nbsp;|&nbsp;
+     <span class="var">F</span> = ${L.fmVars.split('|')[1].replace(' F = ','')} &nbsp;|&nbsp;
+     <span class="var">A(t)</span> = ${L.fmVars.split('|')[2].replace(' A(t) = ','')}`;
+  // Cards
+  const _hSM=document.getElementById('hdSrcMgr'); if(_hSM) _hSM.textContent=L.srcMgr;
+  const _bAS=document.getElementById('btnAddSrc'); if(_bAS) _bAS.textContent=L.addSrc;
+  const _hS=document.getElementById('hdShoot'); if(_hS) _hS.textContent=L.shootMode;
+  document.getElementById('btnSW').setAttribute('data-label', L.wallSW);
+  document.getElementById('btnDWSI').setAttribute('data-label', L.wallDWSI);
+  document.getElementById('btnDWDI').setAttribute('data-label', L.wallDWDI);
+  const swWl=document.getElementById('wlSW'); if(swWl) swWl.textContent=L.wallSW;
+  const dsiWl=document.getElementById('wlDWSI'); if(dsiWl) dsiWl.textContent=L.wallDWSI;
+  const ddiWl=document.getElementById('wlDWDI'); if(ddiWl) ddiWl.textContent=L.wallDWDI;
+  const _hCS=document.getElementById('hdCalcSrc'); if(_hCS) _hCS.textContent=L.calcSrc;
+  const _dL=document.getElementById('distLabel'); if(_dL) _dL.textContent=L.distLabel;
+  const _dP=document.getElementById('distance'); if(_dP) _dP.placeholder=L.distPlaceholder;
+  const _hW=document.getElementById('hdWork'); if(_hW) _hW.textContent=L.workpiece;
+  const _tP=document.getElementById('thickness'); if(_tP) _tP.placeholder=currentLang==='en'?'Enter thickness mm':'輸入厚度 mm';
+  const _tL=document.getElementById('thickLbl'); if(_tL) _tL.textContent=wall==='single'?L.thickLabel:wall==='double-si'?L.thickLabelSI:L.thickLabelDI;
+  const _t2=document.getElementById('t2Label'); if(_t2) _t2.textContent=L.t2Label;
+  const _t2p=document.getElementById('thickness2'); if(_t2p) _t2p.placeholder=L.t2Placeholder;
+  const _hF=document.getElementById('hdFactor'); if(_hF) _hF.textContent=L.factorTable;
+  const _tH=document.getElementById('tableHint'); if(_tH) _tH.textContent=L.tableHint;
+  const _hR=document.getElementById('hdResult'); if(_hR) _hR.textContent=L.calcResult;
+  const cb=document.getElementById('calcBtn'); if(cb) cb.textContent=L.calcBtn;
+  const _fM=document.getElementById('footerMadeBy'); if(_fM) _fM.textContent=L.madeBy;
+  const ahb=document.getElementById('addHomeBtn'); if(ahb) ahb.textContent=L.addHomeBtn;
+  // Wall info
+  setWall(wall);
+  // Formula title
+  const fmTitleText = document.getElementById('fmTitleText');
+  if(fmTitleText) fmTitleText.textContent = L.fmLabel;
+  // Preview labels
+  const pvStrLbl=document.getElementById('pvStrLbl'); if(pvStrLbl) pvStrLbl.textContent=L.todayStr;
+  const pvDaysLbl=document.getElementById('pvDaysLbl'); if(pvDaysLbl) pvDaysLbl.textContent=L.decayDays;
+  const pvPctLbl=document.getElementById('pvPctLbl'); if(pvPctLbl) pvPctLbl.textContent=L.remain;
+  const pvOrigLbl=document.getElementById('pvOrigLbl'); if(pvOrigLbl) pvOrigLbl.textContent=L.calVal;
+  // Select source label & placeholder
+  const _rtL=document.getElementById('resTimeLabel'); if(_rtL) _rtL.textContent=L.resTime;
+  const selLbl=document.getElementById('selSrcLabel'); if(selLbl) selLbl.textContent=currentLang==='en'?'Select Source':'選擇射源';
+  const wpInfoEl=document.getElementById('wpInfo');
+  if(wpInfoEl) wpInfoEl.textContent=currentLang==='en'?'Factor table based on actual RT exposure data. Ir-192 steel, thickness 1~89 mm':'係數表依實際放射線檢測曝光係數表，適用 Ir-192 鋼材，厚度 1~89 mm';
+  // Re-render sources
+  renderList();
+  refreshSel();
+}
 
 // INIT
 const ok=load();
@@ -565,12 +743,17 @@ if(!ok){
   addSrc({name:'Se-75 射源 B',isotope:'Se75',calDate:'2024-12-01',calStrength:8,calUnit:'Ci',halfLifeDays:119.78});
 }
 renderTable();
+// Restore language preference
+try{
+  const savedLang = localStorage.getItem('rt_lang');
+  if(savedLang==='en') setLang('en');
+}catch(e){}
 </script>
 
 <footer style="margin-top:48px;padding:28px 16px 40px;text-align:center;border-top:1px solid var(--border);position:relative;z-index:1">
-  <div style="font-family:var(--mono);font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:6px">DESIGNED &amp; BUILT BY</div>
-  <div style="font-family:var(--mono);font-size:20px;color:var(--amber);letter-spacing:3px;margin-bottom:24px">楊晴雄</div>
-  <button onclick="addToHome()" style="display:inline-flex;align-items:center;gap:10px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.4);color:var(--amber);font-family:var(--mono);font-size:14px;letter-spacing:2px;padding:14px 28px;border-radius:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--amber)';this.style.color='#000'" onmouseout="this.style.background='var(--amber-dim)';this.style.color='var(--amber)'">
+  <div id="footerMadeBy" style="font-family:var(--mono);font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:6px">DESIGNED &amp; BUILT BY</div>
+  <div style="font-family:var(--mono);font-size:20px;color:var(--amber);letter-spacing:3px;margin-bottom:24px">YANG, CHING-HSIUNG</div>
+  <button id="addHomeBtn" onclick="addToHome()" style="display:inline-flex;align-items:center;gap:10px;background:var(--amber-dim);border:1px solid rgba(245,166,35,.4);color:var(--amber);font-family:var(--mono);font-size:14px;letter-spacing:2px;padding:14px 28px;border-radius:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--amber)';this.style.color='#000'" onmouseout="this.style.background='var(--amber-dim)';this.style.color='var(--amber)'">
     <span style="font-size:20px">⊞</span> 加入主畫面
   </button>
   <div id="homeHint" style="margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--text-dim);line-height:1.8;display:none"></div>
